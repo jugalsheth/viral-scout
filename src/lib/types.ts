@@ -1,0 +1,56 @@
+export interface Influencer {
+  id: string;
+  channel_id: string;
+  channel_name: string;
+  subscriber_count?: number;
+  avg_views?: number;
+  engagement_rate?: number;
+  niche?: string;
+  description?: string;
+  thumbnail_url?: string;
+  video_count?: number;
+  estimated_price_per_post?: number;
+  similarity?: number;
+}
+
+export interface InfluencerSearchResult {
+  id: string;
+  channel_name: string;
+  description: string;
+  engagement_rate: number;
+  estimated_price_per_post: number;
+  similarity: number;
+}
+
+export interface AgentMessage {
+  role: 'system' | 'user' | 'assistant' | 'tool';
+  content: string;
+  tool_call_id?: string;
+}
+
+export interface AgentResponse {
+  content: string;
+  reasoning?: string[];
+  influencers?: InfluencerSearchResult[];
+  toolCalls?: ToolCall[];
+}
+
+export interface ToolCall {
+  name: string;
+  arguments: Record<string, any>;
+  result?: any;
+  timestamp?: number;
+  duration?: number;
+}
+
+export interface AgentFlowStep {
+  id: string;
+  type: 'reasoning' | 'tool_call' | 'embedding' | 'vector_search' | 'rag' | 'response';
+  title: string;
+  description: string;
+  details?: any;
+  timestamp: number;
+  duration?: number;
+  status: 'pending' | 'running' | 'completed' | 'error';
+}
+
