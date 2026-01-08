@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
               id: 'step-1',
               type: 'reasoning',
               title: 'Agent Reasoning',
-              description: 'Query analyzed, tools selected',
+              description: toolCalls.length > 0 ? `Query analyzed, ${toolCalls.length} tool${toolCalls.length > 1 ? 's' : ''} selected` : 'Query analyzed, generating direct response',
               timestamp: reasoningStart - startTime,
               duration: reasoningDuration,
               status: 'completed',
@@ -287,6 +287,40 @@ export async function POST(req: NextRequest) {
                 type: 'response',
                 title: 'Response Complete',
                 description: 'Natural language response generated',
+                timestamp: responseStart - startTime,
+                duration: responseDuration,
+                status: 'completed'
+              }
+            })}\n\n`));
+          } else {
+            // No tool calls - direct response
+            // Step 6: Final Response
+            const responseStart = Date.now();
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
+              type: 'flow_step', 
+              step: {
+                id: 'step-response',
+                type: 'response',
+                title: 'Generating Response',
+                description: 'Creating direct response without tool execution',
+                timestamp: responseStart - startTime,
+                status: 'running'
+              }
+            })}\n\n`));
+
+            // Stream the response that was already generated
+            if (assistantContent) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'content', text: assistantContent })}\n\n`));
+            }
+
+            const responseDuration = Date.now() - responseStart;
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
+              type: 'flow_step', 
+              step: {
+                id: 'step-response',
+                type: 'response',
+                title: 'Response Complete',
+                description: 'Direct response generated',
                 timestamp: responseStart - startTime,
                 duration: responseDuration,
                 status: 'completed'
